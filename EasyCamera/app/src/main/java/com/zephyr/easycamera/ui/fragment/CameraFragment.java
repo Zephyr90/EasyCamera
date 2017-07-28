@@ -35,6 +35,8 @@ public class CameraFragment extends Fragment implements View.OnClickListener{
     int mDisplayWidth;
     LinearLayout mSwitchBar;
     View mRatio5_3;
+    View mTakePhoto;
+    View mCameraSwitcher;
 
     @Override
     public void onAttach(Context context) {
@@ -53,6 +55,8 @@ public class CameraFragment extends Fragment implements View.OnClickListener{
     }
 
     private void init() {
+        mTakePhoto = mRootView.findViewById(R.id.ivTakePhoto);
+        mCameraSwitcher = mRootView.findViewById(R.id.camera_switcher);
         mSwitchBar = ((LinearLayout) mRootView.findViewById(R.id.switchBar));
         mCameraView = ((CameraView) mRootView.findViewById(R.id.camera_view));
         mRatio4_3 = ((TextView) mRootView.findViewById(R.id.switchRatio_4_3));
@@ -61,6 +65,8 @@ public class CameraFragment extends Fragment implements View.OnClickListener{
         mRatio5_3.setOnClickListener(this);
         mRatio4_3.setOnClickListener(this);
         mRatio16_9.setOnClickListener(this);
+        mTakePhoto.setOnClickListener(this);
+        mCameraSwitcher.setOnClickListener(this);
         Point screenMetrics = DisplayUtil.getScreenMetrics(mActivity);
         mDisplayHeight = screenMetrics.y;
         mDisplayWidth = screenMetrics.x;
@@ -90,6 +96,12 @@ public class CameraFragment extends Fragment implements View.OnClickListener{
                 int width_5_3 = mDisplayWidth - 100;
                 int height_5_3 = width_5_3 / 3 * 5;
                 switchRatio(width_5_3, height_5_3);
+                break;
+            case R.id.ivTakePhoto:
+                mCameraView.takePicture();
+                break;
+            case R.id.camera_switcher:
+                mCameraView.switchCamera();
                 break;
         }
     }

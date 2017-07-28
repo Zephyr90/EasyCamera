@@ -11,6 +11,11 @@
     <!--沉浸标题栏-->
     <style name="SteepAppTheme" parent="AppTheme" />
 
+    <style name="CameraTheme" parent="AppTheme">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
 
 
 </resources>

@@ -2,6 +2,9 @@ package com.zephyr.easycamera.ui.widget;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.util.AttributeSet;
@@ -12,6 +15,7 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.zephyr.easycamera.utils.CameraOperateHelper;
+import com.zephyr.easycamera.utils.FileUtil;
 
 import java.io.IOException;
 
@@ -19,7 +23,7 @@ import java.io.IOException;
  * Created by zephyr on 2017/7/27.
  */
 
-public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.ErrorCallback {
+public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.ErrorCallback, Camera.PictureCallback {
 
     public static final String TAG = "CameraView";
 
@@ -89,8 +93,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             e.printStackTrace();
             Log.d(TAG, "surfaceCreated: startPreview error!");
         }
-
-
     }
 
     @Override
@@ -129,6 +131,46 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
+    /**
+     * 切换摄像头
+     */
+    public void switchCamera() {
+        int numberOfCameras = Camera.getNumberOfCameras();
+        if (numberOfCameras <= 1) return;
+
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.getCameraInfo(i, info);
+            if (info.facing == mCameraId) {
+                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+                } else {
+                    mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                }
+                break;
+            }
+        }
+
+        releaseCamera();
+        if (mCamera == null) {
+            mCamera = mCameraOperateHelper.doOpenCamera(mCameraId);
+        }
+
+        if (mCamera == null) {
+            Toast.makeText(mContext, "相机启动失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            mCameraOperateHelper.setCameraParams();
+            mCamera.setErrorCallback(this);
+            mCamera.setPreviewDisplay(mHolder);
+            mCamera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void setmCameraId(int cameraId) {
         this.mCameraId = cameraId;
     }
@@ -146,4 +188,24 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mCamera = null;
     }
 
+    public void takePicture() {
+        mCameraOperateHelper.doTakePicture(this);
+    }
+
+    @Override
+    public void onPictureTaken(byte[] bytes, Camera camera) {
+        Bitmap tempBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Bitmap finalBitmap = null;
+        if (tempBitmap == null) return;
+        Matrix matrix = new Matrix();
+        matrix.postRotate(mCameraOperateHelper.getPictureRotation());
+
+        finalBitmap = Bitmap.createBitmap(tempBitmap, 0, 0, tempBitmap.getWidth(), tempBitmap.getHeight(), matrix, true);
+        FileUtil.saveBitmap2File(finalBitmap);
+
+        mCameraOperateHelper.doStartPreview();
+        tempBitmap.recycle();
+        tempBitmap = null;
+
+    }
 }

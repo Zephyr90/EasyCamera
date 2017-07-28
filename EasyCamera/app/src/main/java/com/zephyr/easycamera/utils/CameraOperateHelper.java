@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class CameraOperateHelper implements ICameraOperate{
     private int mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT; // 相机id，用户区分前后置相机
 
     Camera mCamera;
+    int mJpegRotation;
 
     public CameraOperateHelper(Activity c) {
         mActivity = c;
@@ -86,7 +88,8 @@ public class CameraOperateHelper implements ICameraOperate{
         int orientation = correctPreviewOrientation(mCameraId, getDisplayRotation(mActivity));
         mCamera.setDisplayOrientation(orientation);
 
-        // TODO 后期增加照片旋转设置,闪光灯设置
+        // TODO 后期增加闪光灯设置
+        mJpegRotation = getJpegRotation(mCameraId, getDisplayRotation(mActivity));
 
         parameters.setPictureFormat(PixelFormat.JPEG);
 
@@ -99,7 +102,7 @@ public class CameraOperateHelper implements ICameraOperate{
     @Override
     public void doStartPreview() {
         if (mCamera != null) {
-            mCamera.stopPreview();
+            mCamera.startPreview();
         }
     }
 
@@ -119,6 +122,11 @@ public class CameraOperateHelper implements ICameraOperate{
             mCamera.release();
             mCamera = null;
         }
+    }
+
+    @Override
+    public void doTakePicture(Camera.PictureCallback callback) {
+        mCamera.takePicture(null, null, callback);
     }
 
     /**
@@ -211,10 +219,36 @@ public class CameraOperateHelper implements ICameraOperate{
         return result;
     }
 
+    /**
+     * 获得照片旋转角度
+     * @param cameraId
+     * @param orientation
+     * @return
+     */
+    private int getJpegRotation(int cameraId, int orientation) {
+        // See android.hardware.Camera.Parameters.setRotation for
+        // documentation.
+        int rotation = 0;
+        if (orientation != OrientationEventListener.ORIENTATION_UNKNOWN) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(cameraId, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                rotation = (info.orientation - orientation + Degree.ROTATION_360)
+                        % Degree.ROTATION_360;
+            } else { // back-facing camera
+                rotation = (info.orientation + orientation)
+                        % Degree.ROTATION_360;
+            }
+        }
+        return rotation;
+    }
+
     public boolean isSupported(String value, List<String> supported) {
         return supported == null ? false : supported.indexOf(value) >= 0;
     }
 
-
+    public int getPictureRotation() {
+        return mJpegRotation;
+    }
 
 }

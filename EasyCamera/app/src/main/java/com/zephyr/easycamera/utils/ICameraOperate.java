@@ -44,5 +44,11 @@ public interface ICameraOperate {
      */
     void doReleaseCamera();
 
+    /**
+     * 拍照
+     * @param callback
+     */
+    void doTakePicture(Camera.PictureCallback callback);
+
 
 }

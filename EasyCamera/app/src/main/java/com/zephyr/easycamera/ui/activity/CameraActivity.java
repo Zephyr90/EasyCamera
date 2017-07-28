@@ -9,7 +9,7 @@ import android.support.v7.widget.Toolbar;
 import com.zephyr.easycamera.R;
 import com.zephyr.easycamera.ui.fragment.CameraFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class CameraActivity extends AppCompatActivity {
 
     Toolbar mToolbar;
 

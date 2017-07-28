@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.zephyr.easycamera.ui.activity.MainActivity"
+    tools:context="com.zephyr.easycamera.ui.activity.CameraActivity"
     android:fitsSystemWindows="true">
 
     <android.support.v7.widget.Toolbar

@@ -24,14 +24,14 @@ public class SplashActivity extends AppCompatActivity implements IRequestPermiss
     private static final int DELAYMILLIS = 3000;
 
     private String[] mPermissions = new String[]{
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     private Handler mHandler = new Handler();
 
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+            Intent intent = new Intent(SplashActivity.this, CameraActivity.class);
             startActivity(intent);
 //            overridePendingTransition(); // 跳转动画
             finish();
